@@ -11,6 +11,16 @@ print(list[1])
 print(set)
 print(tuple[0])
 
+#range selector for copying a list (because otherwise lists are copied by reference)
+my_list = [1,2,3,4]
+second_list = [1, 2, 3, 4]
+new_list = my_list
+new_list[0] = 5
+copied_list = second_list[:] #<-- use the [:] syntax to copy the contents rather than reference
+
+print(new_list)
+print(copied_list)
+
 MINING_REWARD = 10
 
 # initializing the blockchain
@@ -92,12 +102,14 @@ def mine_block():
         'amount': MINING_REWARD
     }
 
-    open_transactions.append(reward_transaction)
+    copied_transaction = open_transactions[:]
+
+    copied_transaction.append(reward_transaction)
 
     block = {
         'previous_hash': hashed_block, 
         'index': len(blockchain), 
-        'transactions': open_transactions
+        'transactions': copied_transaction
         }
     blockchain.append(block)
     return True
@@ -128,6 +140,10 @@ def verify_chain():
             return False
     return True
 
+def verify_transactions():
+    return (all([verify_transaction(tx) for tx in open_transactions]))
+
+
 waiting_for_input = True
 
 while waiting_for_input:
@@ -137,6 +153,7 @@ while waiting_for_input:
     print('3: Output the blockchain')
     print('4: Output participants')
     print('h: Manipulate the chain')
+    print('5: Check transaction validity')
     print('q: Quit')
     user_choice = get_user_choice()
     if user_choice == '1':
@@ -160,6 +177,11 @@ while waiting_for_input:
         print('-' * 30)
     elif user_choice == '4':
         print(participants)
+    elif user_choice == '5':
+        if verify_transactions():
+            print('All transactions are valid')
+        else:
+            print('There are invalid transactions')
     elif user_choice == 'q':
         print("Terminating session.")
         waiting_for_input = False
